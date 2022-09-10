@@ -50,6 +50,11 @@ class HasArrayDataTest extends TestCase
         $this->assertTrue($this->subject->has('one.two.three'));
     }
 
+    public function test_has_returns_false_when_first_segments_exist_but_final_segments_do_not_exist()
+    {
+        $this->assertFalse($this->subject->has('one.two.three.four.five'));
+    }
+
     public function test_has_returns_false_when_value_does_not_exists()
     {
         $this->subject->setData([]);
