@@ -1,16 +1,36 @@
 <?php
 
-namespace JesseGall\HasArrayData;
+namespace JesseGall\ContainsData;
 
-trait HasArrayData
+use Closure;
+
+trait ContainsData
 {
 
     /**
-     * The data
+     * The container which holds the data.
      *
      * @var array
      */
-    protected array $data = [];
+    protected array $__container = [];
+
+    /**
+     * Returns a reference to the data container.
+     *
+     * To point to a different data container the method can be overridden.
+     * It is also possible to pass a new reference as argument.
+     *
+     * @param array|null $container
+     * @return array
+     */
+    public function &container(array &$container = null): array
+    {
+        if ($container) {
+            $this->__container = &$container;
+        }
+
+        return $this->__container;
+    }
 
     /**
      * Get an item using dot notation.
@@ -22,14 +42,14 @@ trait HasArrayData
     public function get(string $key = null, mixed $default = null): mixed
     {
         if (is_null($key)) {
-            return $this->data;
+            return $this->container();
         }
 
         if (! $this->has($key)) {
             return $default;
         }
 
-        $data = $this->data;
+        $data = $this->container();
 
         $segments = explode('.', $key);
 
@@ -49,7 +69,7 @@ trait HasArrayData
      */
     public function set(string|array $key, mixed $value = null): array
     {
-        $data = &$this->data;
+        $data = &$this->container();
 
         if (is_array($key)) {
             return $data = $key;
@@ -73,18 +93,18 @@ trait HasArrayData
 
         $data[array_shift($segments)] = $value;
 
-        return $this->data;
+        return $this->container();
     }
 
     /**
-     * Check if an item exists using dot notation
+     * Check if an item exists using dot notation.
      *
      * @param string $key
      * @return bool
      */
     public function has(string $key): bool
     {
-        $data = $this->data;
+        $data = $this->container();
 
         $segments = explode('.', $key);
 
@@ -101,6 +121,36 @@ trait HasArrayData
         }
 
         return true;
+    }
+
+    /**
+     * Map the item to the result of the callback.
+     * If the key points to an array, map each item of the array.
+     *
+     * When $replace is true, replace the item with the result
+     *
+     * @param string $key
+     * @param Closure $callback
+     * @param bool $replace
+     * @return mixed
+     */
+    public function map(string $key, Closure $callback, bool $replace = false): mixed
+    {
+        $item = $this->get($key);
+
+        if (! is_array($item)) {
+            $item = $callback($item);
+        } else {
+            foreach ($item as $_key => $_item) {
+                $item[$_key] = $callback($_item, $_key);
+            }
+        }
+
+        if ($replace) {
+            $this->set($key, $item);
+        }
+
+        return $item;
     }
 
 }

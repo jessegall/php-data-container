@@ -1,14 +1,14 @@
 {
-    "name": "jessegall/has-array-data",
-    "description": "A package that provides a trait to get and set items in an array using dot notation",
+    "name": "jessegall/contains-data",
+    "description": "A package that provides a trait that makes it possible for objects to use an array as their source of data.\nAs well as offering the possibility to share the same array instance as data container between instances.",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "JesseGall\\HasArrayData\\": "src/"
+            "JesseGall\\ContainsData\\": "src/"
         }
     },
     "autoload-dev": {
-        "JesseGall\\HasArrayData\\Tests": "tests/"
+        "JesseGall\\ContainsData\\Tests": "tests/"
     },
     "authors": [
         {
