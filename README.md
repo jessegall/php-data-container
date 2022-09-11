@@ -1,6 +1,6 @@
 # php-contains-data
 
-A package that provides a trait that makes it possible for objects to use an array as their data source. 
+A trait that provides a convenient solution for objects to use an array as their data source. 
 As well as offering the possibility to share the same data between instances.
 
 ## Installation

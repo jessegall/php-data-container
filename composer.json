@@ -1,6 +1,6 @@
 {
     "name": "jessegall/contains-data",
-    "description": "A package that provides a trait that makes it possible for objects to use an array as their data source. As well as offering the possibility to share the same data between instances.",
+    "description": "A trait that provides a convenient solution for objects to use an array as their data source. \nAs well as offering the possibility to share the same data between instances.",
     "license": "MIT",
     "autoload": {
         "psr-4": {
