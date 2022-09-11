@@ -73,26 +73,24 @@ class DataContainer {
     ...
 }
 
-array $array = [
-    'property' => 'value',
-    ...
-];
-
 $instanceOne = new DataContainer();
 $instanceTwo = new DataContainer();
 
-$instanceOne->container($array);
-$instanceTwo->container($array);
+array $array = [ 'property' => 'value' ];
 
-$array['property'] = 'new value'; // Will change the data of the two data containers as well
+// Use $array as the container
+$instanceOne->container($array);  
+$instanceTwo->container($array); 
 
+# Changing any value on the array will also change the data in the data containers
+
+$array['property'] = 'new value'; 
 $instanceOne->getProperty(); // 'new value'
 $instanceTwo->getProperty(); // 'new value'
 
 # works the other way around too!
 
 $instanceOne->setProperty('another new value'); 
-
 $instanceTwo->getProperty(); // 'another new value'
 $array['property'] // 'another new value'
 ````
