@@ -1,11 +1,7 @@
 # php-contains-data
 
-A package that provides a trait that makes it possible for objects to use an array as their source of data.
-As well as offering the possibility to share the same array instance as data container between instances.
-
-This package is really useful for wrapping, for example:
-API responses to enable autocompletion and let other developers know what data is available,
-Dividing big arrays in small understandable data containers, and much more.
+A package that provides a trait that makes it possible for objects to use an array as their data source. 
+As well as offering the possibility to share the same data between instances.
 
 ## Installation
 
@@ -96,6 +92,10 @@ $array['property'] // 'another new value'
 ````
 
 ## Examples
+
+This package is really useful for wrapping, for example:
+API responses to enable autocompletion and let other developers know what data is available,
+dividing big arrays in small understandable data containers, and much more...
 
 ### Api wrapper example
 
