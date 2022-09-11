@@ -3,9 +3,9 @@
 A package that provides a trait that makes it possible for objects to use an array as their source of data.
 As well as offering the possibility to share the same array instance as data container between instances.
 
-This package is really useful for wrapping, for example: 
-API responses to enable autocompletion and let other developers know what data is available, 
-Dividing big arrays in small understandable data containers, and much more. 
+This package is really useful for wrapping, for example:
+API responses to enable autocompletion and let other developers know what data is available,
+Dividing big arrays in small understandable data containers, and much more.
 
 ## Installation
 
@@ -15,43 +15,94 @@ composer require jessegall/contains-data
 
 ## Usage
 
-### Basic example
+### Basic
 
 ```php
-$example = new class {
+class Example {
     use ContainsData;
 
-    public function __construct()
+    public function __construct(array $data)
     {
-        $this->data = [
-            'one' => [
-                'two' => [
-                    'three' => 'value'
-                ]
-            ],
-        ];
+        $this->set($data);
     }
     
     ...
 }
 
+$example = new Example([
+    'one' => [
+        'two' => [
+            'three' => 'value'
+        ]
+    ],
+    'list' => [1, 2, 3],
+]);
+
 // Get data
-$example->get('one.two.three');
-$example->get('one.two.three.missing', 'default value');
+$example->get('one.two.three') // Returns 'value'; 
+$example->get('one.two.three.missing', 'default value') // Returns 'default value';
 
 // Set data
-$example->set('one.two.three', 'new value');
-$example->set($overwrite = ['some' => ['new' => 'array']]);
+$example->set('one.two.three', 'new value'); // Replaces only one item
+$example->set(['some' => ['new' => 'array']]); // Replaces the whole data container
 
 // Check if item exists
 $example->has('one.two.three') // true;
 $example->has('one.two.three.missing') // false;
+
+// Map data
+$example->map('list', fn(int $value) => $value * 2); // Returns [2, 4, 6]
 ```
+
+### Shared container reference
+
+```php
+class DataContainer {
+    use ContainsData;
+    
+    public function getProperty(): string 
+    {
+        return $this->get('property')
+    }
+    
+    public function setProperty(string $value): void
+    {
+        $this->set('property', $value);
+    }
+    
+    ...
+}
+
+array $array = [
+    'property' => 'value',
+    ...
+];
+
+$instanceOne = new DataContainer();
+$instanceTwo = new DataContainer();
+
+$instanceOne->container($array);
+$instanceTwo->container($array);
+
+$array['property'] = 'new value'; // Will change the data of the two data containers as well
+
+$instanceOne->getProperty(); // 'new value'
+$instanceTwo->getProperty(); // 'new value'
+
+# works the other way around too!
+
+$instanceOne->setProperty('another new value'); 
+
+$instanceTwo->getProperty(); // 'another new value'
+$array['property'] // 'another new value'
+````
+
+## Examples
 
 ### Api wrapper example
 
 Wrapping api responses can greatly improve code quality and readability.
-Imagine using an API with 100+ different resources. 
+Imagine using an API with 100+ different resources.
 By wrapping them you provide an easy-to-use interface for other developers to work with.
 
 For this example we'll assume that the api returns the following data
@@ -92,7 +143,7 @@ class Order {
     
     public function customer(): Customer
     {
-        return $this->map('customer', fn(array $item) => new Customer($item));
+        return new Customer($this->get('customer'));
     }
     
     /**
