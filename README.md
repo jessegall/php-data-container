@@ -1,4 +1,4 @@
-# php-has-array-data
+# php-contains-data
 
 A package that provides a trait that makes it possible for objects to use an array as their source of data.
 As well as offering the possibility to share the same array instance as data container between instances.
