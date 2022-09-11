@@ -25,7 +25,7 @@ trait ContainsData
      */
     public function &container(array &$container = null): array
     {
-        if ($container) {
+        if (! is_null($container)) {
             $this->__container = &$container;
         }
 
