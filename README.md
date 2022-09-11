@@ -10,7 +10,7 @@ Dividing big arrays in small understandable data containers, and much more.
 ## Installation
 
 ```
-composer require jessegall/has-array-data
+composer require jessegall/contains-data
 ```
 
 ## Usage
