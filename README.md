@@ -82,7 +82,7 @@ array $array = [ 'property' => 'value' ];
 $instanceOne->container($array);  
 $instanceTwo->container($array); 
 
-# Changing any value on the array will also change the data in the data containers
+# Changing any value in the array will also change the data in the data containers
 
 $array['property'] = 'new value'; 
 $instanceOne->getProperty(); // 'new value'
