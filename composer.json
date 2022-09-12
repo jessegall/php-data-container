@@ -8,7 +8,7 @@
         }
     },
     "autoload-dev": {
-        "JesseGall\\ContainsData\\Tests": "tests/"
+        "Tests": "tests/"
     },
     "authors": [
         {

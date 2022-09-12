@@ -1,6 +1,6 @@
 <?php
 
-namespace JesseGall\ContainsData\Tests;
+namespace Tests;
 
 use JesseGall\ContainsData\ContainsData;
 use PHPUnit\Framework\TestCase;
@@ -225,5 +225,18 @@ class ContainsDataTest extends TestCase
         unset($this->subject->container()['this_should_be_synced']);
         $this->assertNotContains('this_should_be_synced', $localSubject->container());
     }
+
+    public function test_container_reference_can_created_with_empty_array()
+    {
+        $container = [];
+
+        $this->subject->container($container);
+
+        $container['value'] = 'expected';
+
+        $this->assertEquals('expected', $this->subject->container()['value']);
+    }
+
+
 
 }
