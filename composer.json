@@ -8,7 +8,9 @@
         }
     },
     "autoload-dev": {
-        "Tests": "tests/"
+        "psr-4": {
+            "Test\\": "tests/"
+        }
     },
     "authors": [
         {

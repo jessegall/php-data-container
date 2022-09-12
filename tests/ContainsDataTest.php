@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace Test;
 
 use JesseGall\ContainsData\ContainsData;
 use PHPUnit\Framework\TestCase;
