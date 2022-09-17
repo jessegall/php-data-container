@@ -3,6 +3,7 @@
 namespace Test;
 
 use JesseGall\ContainsData\ContainsData;
+use JesseGall\ContainsData\GetAsReferenceMissingException;
 use PHPUnit\Framework\TestCase;
 
 class ContainsDataTest extends TestCase
@@ -258,6 +259,22 @@ class ContainsDataTest extends TestCase
                 'three' => 3
             ]
         ], $this->subject->getContainer());
+    }
+
+    public function test_get_as_reference_returns_a_reference()
+    {
+        $value = &$this->subject->getAsReference('associative.one');
+
+        $value = 3;
+
+        $this->assertEquals($value, $this->subject->getContainer()['associative']['one']);
+    }
+
+    public function test_get_as_reference_throws_an_exception_when_key_is_missing()
+    {
+        $this->expectException(GetAsReferenceMissingException::class);
+
+        $this->subject->getAsReference('associative.missing');
     }
 
 }

@@ -61,9 +61,14 @@ trait ContainsData
      *
      * @param string $key
      * @return mixed
+     * @throws GetAsReferenceMissingException
      */
     public function &getAsReference(string $key): mixed
     {
+        if (! $this->has($key)) {
+            throw new GetAsReferenceMissingException($key);
+        }
+
         $data = &$this->container();
 
         if (str_contains($key, '.')) {
@@ -71,7 +76,7 @@ trait ContainsData
 
             $container = new class { use ContainsData; };
 
-            $container->container($data);
+            $container->container($data[$segment]);
 
             return $container->getAsReference(str_replace("$segment.", '', $key));
         }
