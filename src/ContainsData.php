@@ -61,12 +61,12 @@ trait ContainsData
      *
      * @param string $key
      * @return mixed
-     * @throws GetAsReferenceMissingException
+     * @throws ReferenceMissingException
      */
     public function &getAsReference(string $key): mixed
     {
         if (! $this->has($key)) {
-            throw new GetAsReferenceMissingException($key);
+            throw new ReferenceMissingException($key);
         }
 
         $data = &$this->container();

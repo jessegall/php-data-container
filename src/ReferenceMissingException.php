@@ -4,7 +4,7 @@ namespace JesseGall\ContainsData;
 
 use Exception;
 
-class GetAsReferenceMissingException extends Exception
+class ReferenceMissingException extends Exception
 {
 
     public function __construct(string $key)

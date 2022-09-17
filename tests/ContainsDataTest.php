@@ -3,7 +3,7 @@
 namespace Test;
 
 use JesseGall\ContainsData\ContainsData;
-use JesseGall\ContainsData\GetAsReferenceMissingException;
+use JesseGall\ContainsData\ReferenceMissingException;
 use PHPUnit\Framework\TestCase;
 
 class ContainsDataTest extends TestCase
@@ -272,7 +272,7 @@ class ContainsDataTest extends TestCase
 
     public function test_get_as_reference_throws_an_exception_when_key_is_missing()
     {
-        $this->expectException(GetAsReferenceMissingException::class);
+        $this->expectException(ReferenceMissingException::class);
 
         $this->subject->getAsReference('associative.missing');
     }
