@@ -57,7 +57,7 @@ trait ContainsData
     }
 
     /**
-     * Get an item using dot notation.
+     * Get an item as reference using dot notation.
      *
      * @param string $key
      * @return mixed
