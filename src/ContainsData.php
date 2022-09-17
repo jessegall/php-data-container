@@ -35,7 +35,7 @@ trait ContainsData
     /**
      * Get an item using dot notation.
      *
-     * @param string|null $key
+     * @param string $key
      * @param mixed|null $default
      * @return mixed
      */
@@ -54,6 +54,29 @@ trait ContainsData
         }
 
         return $data;
+    }
+
+    /**
+     * Get an item using dot notation.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function &getAsReference(string $key): mixed
+    {
+        $data = &$this->container();
+
+        if (str_contains($key, '.')) {
+            [$segment] = explode('.', $key);
+
+            $container = new class { use ContainsData; };
+
+            $container->container($data);
+
+            return $container->getAsReference(str_replace("$segment.", '', $key));
+        }
+
+        return $data[$key];
     }
 
     /**
