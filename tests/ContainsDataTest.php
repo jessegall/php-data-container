@@ -37,14 +37,14 @@ class ContainsDataTest extends TestCase
                 ];
             }
 
-            public function getData(): array
+            public function getContainer(): array
             {
                 return $this->__container;
             }
 
-            public function setData(array $data): void
+            public function setContainer(array $container): void
             {
-                $this->__container = $data;
+                $this->__container = $container;
             }
         };
     }
@@ -63,16 +63,11 @@ class ContainsDataTest extends TestCase
 
     public function test_has_returns_false_when_value_does_not_exists()
     {
-        $this->subject->setData([]);
+        $this->subject->setContainer([]);
 
         $this->assertFalse($this->subject->has('one'));
         $this->assertFalse($this->subject->has('one.two'));
         $this->assertFalse($this->subject->has('one.two.three'));
-    }
-
-    public function test_get_returns_root_data_when_key_is_null()
-    {
-        $this->assertEquals($this->subject->getData(), $this->subject->get());
     }
 
     public function test_get_value_with_dot_notation_returns_expected_value()
@@ -84,7 +79,7 @@ class ContainsDataTest extends TestCase
 
     public function test_get_returns_null_when_value_does_not_exist()
     {
-        $this->subject->setData([]);
+        $this->subject->setContainer([]);
 
         $this->assertNull($this->subject->get('one'));
         $this->assertNull($this->subject->get('one.two'));
@@ -93,16 +88,11 @@ class ContainsDataTest extends TestCase
 
     public function test_get_returns_default_when_value_does_not_exist_and_default_is_given()
     {
-        $this->subject->setData([]);
+        $this->subject->setContainer([]);
 
         $this->assertEquals('default', $this->subject->get('one', 'default'));
         $this->assertEquals('default', $this->subject->get('one.two', 'default'));
         $this->assertEquals('default', $this->subject->get('one.two.three', 'default'));
-    }
-
-    public function test_set_replaces_data_when_first_parameter_is_an_array()
-    {
-        $this->assertEquals(['some' => ['new' => 'array']], $this->subject->set(['some' => ['new' => 'array']]));
     }
 
     public function test_set_overwrites_existing_value_when_exists()
@@ -110,18 +100,18 @@ class ContainsDataTest extends TestCase
         $expected = 'new value';
 
         $this->subject->set('one.two.three', $expected);
-        $this->assertEquals($expected, $this->subject->getData()['one']['two']['three']);
+        $this->assertEquals($expected, $this->subject->getContainer()['one']['two']['three']);
 
         $this->subject->set('one.two', $expected);
-        $this->assertEquals($expected, $this->subject->getData()['one']['two']);
+        $this->assertEquals($expected, $this->subject->getContainer()['one']['two']);
 
         $this->subject->set('one', $expected);
-        $this->assertEquals($expected, $this->subject->getData()['one']);
+        $this->assertEquals($expected, $this->subject->getContainer()['one']);
     }
 
     public function test_set_creates_missing_segments_when_missing()
     {
-        $this->subject->setData([]);
+        $this->subject->setContainer([]);
 
         $this->assertEquals(['one' => 'value'], $this->subject->set('one', 'value'));
         $this->assertEquals(['one' => ['two' => 'value']], $this->subject->set('one.two', 'value'));
@@ -164,14 +154,14 @@ class ContainsDataTest extends TestCase
     {
         $this->subject->map('list', fn($item) => $item * ($item - 1));
 
-        $this->assertEquals([1, 2, 3], $this->subject->getData()['list']);
+        $this->assertEquals([1, 2, 3], $this->subject->getContainer()['list']);
     }
 
     public function test_map_replaces_item_when_replace_is_set_to_true()
     {
         $this->subject->map('list', fn($item) => $item * ($item - 1), true);
 
-        $this->assertEquals([0, 2, 6], $this->subject->getData()['list']);
+        $this->assertEquals([0, 2, 6], $this->subject->getContainer()['list']);
     }
 
     public function test_container_can_be_overridden_to_point_to_a_different_array()
@@ -237,6 +227,37 @@ class ContainsDataTest extends TestCase
         $this->assertEquals('expected', $this->subject->container()['value']);
     }
 
+    public function test_merge_merges_data_as_expected()
+    {
+        $this->subject->merge([
+            'one' => [
+                'two' => [
+                    'three' => 'new value',
+                ],
+                '_two' => [
+                    'property' => 'value'
+                ]
+            ],
+            'merged' => 'property',
+        ]);
 
+        $this->assertEquals([
+            'one' => [
+                'two' => [
+                    'three' => 'new value'
+                ],
+                '_two' => [
+                    'property' => 'value'
+                ]
+            ],
+            'merged' => 'property',
+            'list' => [1, 2, 3],
+            'associative' => [
+                'one' => 1,
+                'two' => 2,
+                'three' => 3
+            ]
+        ], $this->subject->getContainer());
+    }
 
 }

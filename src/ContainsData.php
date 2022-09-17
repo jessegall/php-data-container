@@ -39,12 +39,8 @@ trait ContainsData
      * @param mixed|null $default
      * @return mixed
      */
-    public function get(string $key = null, mixed $default = null): mixed
+    public function get(string $key, mixed $default = null): mixed
     {
-        if (is_null($key)) {
-            return $this->container();
-        }
-
         if (! $this->has($key)) {
             return $default;
         }
@@ -63,17 +59,13 @@ trait ContainsData
     /**
      * Set item using dot notation.
      *
-     * @param string|array $key
+     * @param string $key
      * @param mixed|null $value
      * @return array
      */
-    public function set(string|array $key, mixed $value = null): array
+    public function set(string $key, mixed $value = null): array
     {
         $data = &$this->container();
-
-        if (is_array($key)) {
-            return $data = $key;
-        }
 
         $segments = explode('.', $key);
 
@@ -151,6 +143,28 @@ trait ContainsData
         }
 
         return $item;
+    }
+
+    /**
+     * Merge an array with the container
+     *
+     * @param array $data
+     * @param string $prefix
+     * @return array
+     */
+    public function merge(array $data, string $prefix = ''): array
+    {
+        foreach ($data as $_key => $value) {
+            $key = $prefix . $_key;
+
+            if (is_array($value)) {
+                $this->merge($value, "$key.");
+            } else {
+                $this->set($key, $value);
+            }
+        }
+
+        return $this->container();
     }
 
 }
