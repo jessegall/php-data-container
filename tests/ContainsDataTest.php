@@ -277,4 +277,17 @@ class ContainsDataTest extends TestCase
         $this->subject->getAsReference('associative.missing');
     }
 
+    public function test_set_as_reference_sets_value_as_reference()
+    {
+        $value = 'initial value';
+
+        $this->subject->setAsReference('one.two.three', $value);
+
+        $this->assertEquals('initial value', $this->subject->getContainer()['one']['two']['three']);
+
+        $value = 'new value';
+
+        $this->assertEquals('new value', $this->subject->getContainer()['one']['two']['three']);
+    }
+
 }

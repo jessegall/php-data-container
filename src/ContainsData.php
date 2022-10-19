@@ -41,19 +41,11 @@ trait ContainsData
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        if (! $this->has($key)) {
+        try {
+            return $this->getAsReference($key);
+        } catch (ReferenceMissingException) {
             return $default;
         }
-
-        $data = $this->container();
-
-        $segments = explode('.', $key);
-
-        foreach ($segments as $segment) {
-            $data = $data[$segment];
-        }
-
-        return $data;
     }
 
     /**
@@ -93,6 +85,18 @@ trait ContainsData
      */
     public function set(string $key, mixed $value = null): array
     {
+        return $this->setAsReference($key, $value);
+    }
+
+    /**
+     * Set item as reference using dot notation.
+     *
+     * @param string $key
+     * @param mixed|null $value
+     * @return array
+     */
+    public function setAsReference(string $key, mixed &$value): array
+    {
         $data = &$this->container();
 
         $segments = explode('.', $key);
@@ -111,7 +115,7 @@ trait ContainsData
             $data = &$data[$segment];
         }
 
-        $data[array_shift($segments)] = $value;
+        $data[array_shift($segments)] = &$value;
 
         return $this->container();
     }
