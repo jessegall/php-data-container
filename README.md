@@ -1,13 +1,28 @@
 # php-contains-data
 
-A trait that provides a convenient solution for objects to use an array as their data source. 
-As well as offering the possibility to share the same data between instances.
+The ContainsData trait provides a convenient way to manage data within an array in PHP, making it easy to access, modify, and manipulate the data using dot notation.
 
 ## Installation
 
 ```
 composer require jessegall/contains-data
 ```
+
+## What can it do?
+
+The ContainsData trait provides a set of methods for managing data within an array in PHP.
+
+The trait provides the following methods:
+
+- container(): This method returns a reference to the data container. It can be used to access or modify the container property of the class.
+- get(): This method retrieves the value of an item in the data container using dot notation to specify the key. For example, if the data container contains an array with a key user, you could use get('user') to retrieve the value of that key.
+- getAsReference(): This method is similar to get(), but it returns a reference to the item in the data container instead of a copy of the value. This can be useful if you want to modify the value of an item in the container and have those changes reflected in the container itself.
+- set(): This method sets the value of an item in the data container using dot notation to specify the key. For example, if you want to set the value of a key user in the data container, you could use set('user', $value) to set the value of that key.
+- setAsReference(): This method is similar to set(), but it sets the value of an item in the data container as a reference to the value passed to the method. This can be useful if you want to modify the value of the item in the container and have those changes reflected in the value itself.
+- has(): This method checks if an item exists in the data container using dot notation to specify the key. For example, if you want to check if the key user exists in the data container, you could use has('user') to check for its existence.
+- map(): This method maps the value of an item in the data container to the result of a callback function. For example, if you want to map the values of an array in the data container to the result of a callback function, you could use map('array_key', $callback) to apply the callback function to each item in the array.
+
+
 
 ## Usage
 
@@ -50,7 +65,10 @@ $example->has('one.two.three.missing') // false;
 $example->map('list', fn(int $value) => $value * 2); // Returns [2, 4, 6]
 ```
 
-### Shared container reference
+### Sharing a container between instances
+
+This can be useful in situations where multiple instances of a class need to access and modify the same data, such as when implementing a cache or when working with a shared database connection. 
+
 
 ```php
 class DataContainer {
