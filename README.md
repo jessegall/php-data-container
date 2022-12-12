@@ -36,6 +36,8 @@ The `has()` method checks if a key exists in the container using dot notation to
 
 The `map()` method applies a callback function to a value within the container and returns the result. If the provided key points to an array, the callback is applied to each item in the array and an array of results is returned. If the `$replace` argument is `true`, the original value in the container is replaced with the result of the callback.
 
+The `merge()` method can be used to merge additional data into the container. It allows the data in the container to be easily extended or updated with new data.
+
 
 ## Usage
 
@@ -66,6 +68,9 @@ $mappedValues = $data->map('foo.bar', function ($value) {
 $data->map('foo.bar', function ($value) {
     return strtoupper($value);
 }, true);
+
+// Merge additional data into the container
+$data->merge(['foo' => ['qux' => 'quux'], 'corge' => 'grault']);
 
 ```
 
