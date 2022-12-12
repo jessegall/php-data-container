@@ -1,6 +1,14 @@
 # php-contains-data
 
-The ContainsData trait provides a convenient way to manage data within an array in PHP, making it easy to access, modify, and manipulate the data using dot notation.
+The ContainsData trait provides a convenient way to manage data within an array in PHP, making it easy to access, modify, and manipulate the data using dot notation. 
+The trait also allows sharing a container instance between objects, allowing multiple objects to access and modify the same data.
+
+## Table of contents
+
+- [Installation](#installation)
+- [What can it do?](#what-can-it-do)
+- [Usage](#usage)
+- [Sharing a container between instances](#sharing-a-container-between-instances)
 
 ## Installation
 
@@ -14,97 +22,89 @@ The ContainsData trait provides a set of methods for managing data within an arr
 
 The trait provides the following methods:
 
-- container(): This method returns a reference to the data container. It can be used to access or modify the container property of the class.
-- get(): This method retrieves the value of an item in the data container using dot notation to specify the key. For example, if the data container contains an array with a key user, you could use get('user') to retrieve the value of that key.
-- getAsReference(): This method is similar to get(), but it returns a reference to the item in the data container instead of a copy of the value. This can be useful if you want to modify the value of an item in the container and have those changes reflected in the container itself.
-- set(): This method sets the value of an item in the data container using dot notation to specify the key. For example, if you want to set the value of a key user in the data container, you could use set('user', $value) to set the value of that key.
-- setAsReference(): This method is similar to set(), but it sets the value of an item in the data container as a reference to the value passed to the method. This can be useful if you want to modify the value of the item in the container and have those changes reflected in the value itself.
-- has(): This method checks if an item exists in the data container using dot notation to specify the key. For example, if you want to check if the key user exists in the data container, you could use has('user') to check for its existence.
-- map(): This method maps the value of an item in the data container to the result of a callback function. For example, if you want to map the values of an array in the data container to the result of a callback function, you could use map('array_key', $callback) to apply the callback function to each item in the array.
+The `container()` method returns a reference to the container of the instance, which holds the data. If an argument is provided, the reference of the container property is updated to point to the provided array.
 
+The `get()` method retrieves a value from the container using dot notation to traverse the array. If the provided key does not exist in the container, the method returns the value provided as the default argument.
+
+The `getAsReference()` method works similarly to the `get()` method, but instead of returning the value directly, it returns a reference to the value. This allows the caller to modify the value directly in the container. If the provided key does not exist in the container, the method throws a `ReferenceMissingException` exception.
+
+The `set()` method sets a value in the container using dot notation to traverse the array. If any intermediate keys in the provided key do not exist, they are created as empty arrays. The method returns the entire data container after the value has been set.
+
+The `setAsReference()` method works similarly to the `set()` method, but instead of setting the value directly, it sets a reference to the value. This allows the caller to modify the value directly in the container.
+
+The `has()` method checks if a key exists in the container using dot notation to traverse the array. If any intermediate keys in the provided key do not exist, the method returns `false`. If the key exists, the method returns `true`.
+
+The `map()` method applies a callback function to a value within the container and returns the result. If the provided key points to an array, the callback is applied to each item in the array and an array of results is returned. If the `$replace` argument is `true`, the original value in the container is replaced with the result of the callback.
 
 
 ## Usage
 
-### Basic
-
 ```php
-class Example {
-    use ContainsData;
+use JesseGall\ContainsData\ContainsData;
 
-    public function __construct(array $data)
-    {
-        $this->set($data);
-    }
-    
-    ...
+$data = new class {
+    use ContainsData;
+};
+
+// Set a value in the container using dot notation
+$data->set('foo.bar', 'baz');
+
+// Get a value from the container using dot notation
+$value = $data->get('foo.bar'); // "baz"
+
+// Check if a key exists in the container
+if ($data->has('foo.bar')) {
+    // ...
 }
 
-$example = new Example([
-    'one' => [
-        'two' => [
-            'three' => 'value'
-        ]
-    ],
-    'list' => [1, 2, 3],
-]);
+// Map the values in an array within the container
+$mappedValues = $data->map('foo.bar', function ($value) {
+    return strtoupper($value);
+}); // ["BAZ"]
 
-// Get data
-$example->get('one.two.three') // Returns 'value'; 
-$example->get('one.two.three.missing', 'default value') // Returns 'default value';
+// Replace the original value with the result of the callback
+$data->map('foo.bar', function ($value) {
+    return strtoupper($value);
+}, true);
 
-// Set data
-$example->set('one.two.three', 'new value'); // Replaces only one item
-$example->set(['some' => ['new' => 'array']]); // Replaces the whole data container
-
-// Check if item exists
-$example->has('one.two.three') // true;
-$example->has('one.two.three.missing') // false;
-
-// Map data
-$example->map('list', fn(int $value) => $value * 2); // Returns [2, 4, 6]
 ```
 
-### Sharing a container between instances
+## Sharing a container between instances
 
-This can be useful in situations where multiple instances of a class need to access and modify the same data, such as when implementing a cache or when working with a shared database connection. 
+Sharing a container instance between objects allows multiple objects to access and modify the same data. This can be useful in situations where multiple objects need to share information and maintain a consistent state.
 
+To share a container instance, the reference of the container array must be passed to the `container()` method of each object that should have access to the shared data.
 
+Once the container instance has been shared, any modifications to the data made through one of the objects will be reflected in the other objects as well, since they all reference the same array instance. This allows the objects to maintain a consistent state and share information.
+
+Here is an example that demonstrates how to share a container instance between objects
 ```php
-class DataContainer {
+use JesseGall\ContainsData\ContainsData;
+
+class DataContainer
+{
     use ContainsData;
-    
-    public function getProperty(): string 
-    {
-        return $this->get('property')
-    }
-    
-    public function setProperty(string $value): void
-    {
-        $this->set('property', $value);
-    }
-    
-    ...
 }
 
-$instanceOne = new DataContainer();
-$instanceTwo = new DataContainer();
+// Create a data container
+$data = ['foo' => 'bar'];
 
-$array = [ 'property' => 'value' ];
+// Create an instance of the DataContainer class
+$container1 = new DataContainer();
 
-// Use $array as the container
-$instanceOne->container($array);  
-$instanceTwo->container($array); 
+// Set the container for the object
+$container1->container($data);
 
-# Changing any value in the array will also change the content in the DataContainer instances
+// Create another instance of the DataContainer class
+$container2 = new DataContainer();
 
-$array['property'] = 'new value'; 
-$instanceOne->getProperty(); // 'new value'
-$instanceTwo->getProperty(); // 'new value'
+// Set the container for the second object to the same container instance
+$container2->container($data);
 
-# works the other way around too!
+// Modify the value in the container using one of the objects
+$container1->set('foo', 'baz');
 
-$instanceOne->setProperty('another new value'); 
-$instanceTwo->getProperty(); // 'another new value'
-$array['property'] // 'another new value'
+// Access the modified value using the other object
+echo $container2->get('foo'); // "baz"
 ````
+In this example, the `$data` array is shared between the two objects that use the `ContainsData` trait by passing the reference of the `$data` array to the `container()` method of each object. Any modifications to the `$data` array made through one of the objects will be reflected in the other object as well, since they both reference the same array instance.
