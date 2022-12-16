@@ -182,8 +182,6 @@ trait ContainsData
      * Filter the item using the provided callback.
      * If the key points to an array, filter each item of the array.
      *
-     * When $replace is true, replace the item with the result
-     *
      * @param string $key
      * @param Closure $callback
      * @return mixed
