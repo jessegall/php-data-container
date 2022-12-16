@@ -177,6 +177,34 @@ trait ContainsData
         return $item;
     }
 
+
+    /**
+     * Filter the item using the provided callback.
+     * If the key points to an array, filter each item of the array.
+     *
+     * When $replace is true, replace the item with the result
+     *
+     * @param string $key
+     * @param Closure $callback
+     * @return mixed
+     */
+    public function filter(string $key, Closure $callback): mixed
+    {
+        $data = $this->get($key);
+
+        if (is_array($data)) {
+            $result = array_filter($data, $callback);
+
+            if (array_is_list($data)) {
+                $result = array_values($result);
+            }
+
+            return $result;
+        }
+
+        return $callback($data) ? $data : null;
+    }
+
     /**
      * Merge an array with the container
      *

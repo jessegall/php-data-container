@@ -290,4 +290,61 @@ class ContainsDataTest extends TestCase
         $this->assertEquals('new value', $this->subject->getContainer()['one']['two']['three']);
     }
 
+    public function test_filter_return_correct_values_when_filtering_array()
+    {
+        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
+
+        $container = new class { use ContainsData; };
+        $container->container($data);
+
+        $result = $container->filter('foo', function ($item) {
+            return $item !== 'b';
+        });
+
+        $this->assertEquals(['a', 'c'], $result);
+    }
+
+    public function test_filter_return_correct_empty_array_when_all_items_in_array_are_filtered()
+    {
+        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
+
+        $container = new class { use ContainsData; };
+        $container->container($data);
+
+        $result = $container->filter('foo', function ($item) {
+            return is_numeric($item);
+        });
+
+        $this->assertEquals([], $result);
+    }
+
+
+    public function test_filter_returns_correct_value_when_filtering_single_item()
+    {
+        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
+
+        $container = new class { use ContainsData; };
+        $container->container($data);
+
+        $result = $container->filter('bar', function ($item) {
+            return $item > 1;
+        });
+
+        $this->assertEquals(2, $result);
+    }
+
+    public function test_filter_returns_null_when_filtering_single_item_is_filtered()
+    {
+        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
+
+        $container = new class { use ContainsData; };
+        $container->container($data);
+
+        $result = $container->filter('bar', function ($item) {
+            return $item > 2;
+        });
+
+        $this->assertNull($result);
+    }
+
 }
