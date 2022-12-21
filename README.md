@@ -1,4 +1,6 @@
 # php-contains-data
+[![Build](https://github.com/jessegall/php-contains-data/actions/workflows/php.yml/badge.svg)](https://github.com/jessegall/php-contains-data/actions/workflows/php.yml)
+[![codecov](https://codecov.io/github/jessegall/php-contains-data/branch/main/graph/badge.svg?token=06271AGB2I)](https://codecov.io/github/jessegall/php-contains-data)
 
 The ContainsData trait provides a convenient way to manage data within an array in PHP, making it easy to access, modify, and manipulate the data using dot notation. 
 The trait also allows sharing a container instance between objects, allowing multiple objects to access and modify the same data.
