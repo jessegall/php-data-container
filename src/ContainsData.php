@@ -233,13 +233,26 @@ trait ContainsData
     /**
      * Clear the container
      *
+     * @param array $except
      * @return void
      */
-    public function clear(): void
+    public function clear(array $except = []): void
     {
         $container = &$this->container();
 
-        $container = [];
+        $persist = new class { use ContainsData; };
+
+        foreach ($except as $key) {
+            try {
+                $value = &$this->getAsReference($key);
+
+                $persist->setAsReference($key, $value);
+            } catch (ReferenceMissingException) {
+                continue;
+            }
+        }
+
+        $container = $persist->container();
 
         $this->container($container);
     }

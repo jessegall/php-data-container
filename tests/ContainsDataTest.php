@@ -378,4 +378,26 @@ class ContainsDataTest extends TestCase
         $this->assertEmpty($reference);
     }
 
+    public function test_given_except_when_clear_then_excepted_keys_are_not_cleared()
+    {
+        $this->subject->clear([
+            'associative.one',
+        ]);
+
+        $this->assertTrue($this->subject->has('associative.one'));
+    }
+
+    public function test_given_except_when_clear_then_reference_still_exists()
+    {
+        $reference = &$this->subject->getAsReference('associative.one');
+
+        $this->subject->clear([
+            'associative.one',
+        ]);
+
+        $reference = 'new value';
+
+        $this->assertEquals('new value', $this->subject->get('associative.one'));
+    }
+
 }
