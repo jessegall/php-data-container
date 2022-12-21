@@ -207,17 +207,22 @@ trait ContainsData
      * Merge an array with the container
      *
      * @param array $data
+     * @param bool $overwrite
      * @param string $prefix
      * @return array
      */
-    public function merge(array $data, string $prefix = ''): array
+    public function merge(array $data, bool $overwrite, string $prefix = ''): array
     {
         foreach ($data as $_key => $value) {
             $key = $prefix . $_key;
 
             if (is_array($value)) {
-                $this->merge($value, "$key.");
+                $this->merge($value, $overwrite, "$key.");
             } else {
+                if (! $overwrite && $this->has($key)) {
+                    continue;
+                }
+
                 $this->set($key, $value);
             }
         }

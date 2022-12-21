@@ -240,7 +240,7 @@ class ContainsDataTest extends TestCase
                 ]
             ],
             'merged' => 'property',
-        ]);
+        ], true);
 
         $this->assertEquals([
             'one' => [
@@ -259,6 +259,22 @@ class ContainsDataTest extends TestCase
                 'three' => 3
             ]
         ], $this->subject->getContainer());
+    }
+
+    public function test_given_overwrite_false_when_merge_then_existing_data_is_preserved()
+    {
+        $this->subject->merge([
+            'one' => [
+                'two' => [
+                    'three' => 'new value',
+                ],
+            ],
+            'merged' => 'merged value',
+        ], false);
+
+        $this->assertEquals('value', $this->subject->get('one.two.three'));
+
+        $this->assertEquals('merged value', $this->subject->get('merged'));
     }
 
     public function test_get_as_reference_returns_a_reference()
