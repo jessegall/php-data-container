@@ -240,7 +240,7 @@ class ContainsDataTest extends TestCase
                 ]
             ],
             'merged' => 'property',
-        ], true);
+        ]);
 
         $this->assertEquals([
             'one' => [

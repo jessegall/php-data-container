@@ -211,7 +211,7 @@ trait ContainsData
      * @param string $prefix
      * @return array
      */
-    public function merge(array $data, bool $overwrite, string $prefix = ''): array
+    public function merge(array $data, bool $overwrite = true, string $prefix = ''): array
     {
         foreach ($data as $_key => $value) {
             $key = $prefix . $_key;
