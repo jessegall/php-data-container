@@ -12,7 +12,7 @@
             "Test\\": "tests/"
         },
         "files": [
-            ""
+            "tests/helpers.test.php"
         ]
     },
     "authors": [
