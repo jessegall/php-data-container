@@ -225,4 +225,18 @@ trait ContainsData
         return $this->container();
     }
 
+    /**
+     * Clear the container
+     *
+     * @return void
+     */
+    public function clear(): void
+    {
+        $container = &$this->container();
+
+        $container = [];
+
+        $this->container($container);
+    }
+
 }

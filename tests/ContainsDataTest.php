@@ -318,7 +318,6 @@ class ContainsDataTest extends TestCase
         $this->assertEquals([], $result);
     }
 
-
     public function test_filter_returns_correct_value_when_filtering_single_item()
     {
         $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
@@ -345,6 +344,22 @@ class ContainsDataTest extends TestCase
         });
 
         $this->assertNull($result);
+    }
+
+    public function test_when_clear_container_it_is_empty()
+    {
+        $this->subject->clear();
+
+        $this->assertEmpty($this->subject->container());
+    }
+
+    public function test_when_clear_then_reference_is_empty()
+    {
+        $reference = &$this->subject->container();
+
+        $this->subject->clear();
+
+        $this->assertEmpty($reference);
     }
 
 }
