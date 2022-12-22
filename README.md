@@ -40,6 +40,7 @@ The `map()` method applies a callback function to a value within the container a
 
 The `merge()` method can be used to merge additional data into the container. It allows the data in the container to be easily extended or updated with new data.
 
+The `clear()` removes all items from the container array, except the items specified in the $except argument.
 
 ## Usage
 
@@ -74,6 +75,8 @@ $data->map('foo.bar', function ($value) {
 // Merge additional data into the container
 $data->merge(['foo' => ['qux' => 'quux'], 'corge' => 'grault']);
 
+// Clear all items from the container
+$data->clear();
 ```
 
 ## Sharing a container between instances

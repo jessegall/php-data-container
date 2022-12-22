@@ -393,6 +393,7 @@ class ContainsDataTest extends TestCase
 
         $this->subject->clear([
             'associative.one',
+            'missing.property'
         ]);
 
         $reference = 'new value';
