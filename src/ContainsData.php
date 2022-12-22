@@ -256,5 +256,4 @@ trait ContainsData
 
         $this->container($container);
     }
-
 }
