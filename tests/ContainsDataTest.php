@@ -96,6 +96,11 @@ class ContainsDataTest extends TestCase
         $this->assertEquals('default', $this->subject->get('one.two.three', 'default'));
     }
 
+    public function test_given_key_null_when_get_then_entire_container_returned()
+    {
+        $this->assertEquals($this->subject->getContainer(), $this->subject->get(null));
+    }
+
     public function test_set_overwrites_existing_value_when_exists()
     {
         $expected = 'new value';
@@ -163,6 +168,23 @@ class ContainsDataTest extends TestCase
         $this->subject->map('list', fn($item) => $item * ($item - 1), true);
 
         $this->assertEquals([0, 2, 6], $this->subject->getContainer()['list']);
+    }
+
+    public function test_given_key_null_when_map_is_called_then_map_over_all_items()
+    {
+        $expected = [1, 2, 3];
+
+        $actual = [];
+
+        $subject = new class { use ContainsData; };
+
+        $subject->container($expected);
+
+        $subject->map(null, function ($item) use (&$actual) {
+            $actual[] = $item;
+        });
+
+        $this->assertEquals($expected, $actual);
     }
 
     public function test_container_can_be_overridden_to_point_to_a_different_array()

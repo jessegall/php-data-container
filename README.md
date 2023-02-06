@@ -26,7 +26,7 @@ The trait provides the following methods:
 
 The `container()` method returns a reference to the container of the instance, which holds the data. If an argument is provided, the reference of the container property is updated to point to the provided array.
 
-The `get()` method retrieves a value from the container using dot notation to traverse the array. If the provided key does not exist in the container, the method returns the value provided as the default argument.
+The `get()` method retrieves a value from the container using dot notation to traverse the array. If the provided key does not exist in the container, the method returns the value provided as the default argument. If the provided key is null, the method returns the entire data container.
 
 The `getAsReference()` method works similarly to the `get()` method, but instead of returning the value directly, it returns a reference to the value. This allows the caller to modify the value directly in the container. If the provided key does not exist in the container, the method throws a `ReferenceMissingException` exception.
 

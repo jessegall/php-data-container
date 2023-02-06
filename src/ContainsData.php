@@ -33,14 +33,19 @@ trait ContainsData
     }
 
     /**
-     * Get an item using dot notation.
+     * Get an item using dot notation
+     * If no key is provided the entire container will be returned.
      *
-     * @param string $key
+     * @param string|null $key
      * @param mixed|null $default
      * @return mixed
      */
-    public function get(string $key, mixed $default = null): mixed
+    public function get(string $key = null, mixed $default = null): mixed
     {
+        if (is_null($key)) {
+            return $this->container();
+        }
+
         try {
             return $this->getAsReference($key);
         } catch (ReferenceMissingException) {
@@ -176,12 +181,12 @@ trait ContainsData
      *
      * When $replace is true, replace the item with the result
      *
-     * @param string $key
+     * @param string|null $key
      * @param Closure $callback
      * @param bool $replace
      * @return mixed
      */
-    public function map(string $key, Closure $callback, bool $replace = false): mixed
+    public function map(string|null $key, Closure $callback, bool $replace = false): mixed
     {
         $item = $this->get($key);
 
