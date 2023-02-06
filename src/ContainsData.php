@@ -121,6 +121,29 @@ trait ContainsData
     }
 
     /**
+     * Remove an item using dot notation.
+     *
+     * @param string $key
+     * @return void
+     */
+    public function remove(string $key): void
+    {
+        $segments = explode('.', $key);
+
+        if (count($segments) > 1) {
+            try {
+                $container = &$this->getAsReference(implode('.', array_slice($segments, 0, -1)));
+            } catch (ReferenceMissingException) {
+                return;
+            }
+        } else {
+            $container = &$this->container();
+        }
+
+        unset($container[array_pop($segments)]);
+    }
+
+    /**
      * Check if an item exists using dot notation.
      *
      * @param string $key
@@ -253,7 +276,5 @@ trait ContainsData
         }
 
         $container = $persist->container();
-
-        $this->container($container);
     }
 }

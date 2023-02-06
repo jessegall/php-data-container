@@ -401,4 +401,25 @@ class ContainsDataTest extends TestCase
         $this->assertEquals('new value', $this->subject->get('associative.one'));
     }
 
+    public function test_when_remove_then_key_does_not_exist()
+    {
+        $this->subject->remove('list');
+
+        $this->assertFalse($this->subject->has('list'));
+    }
+
+    public function test_when_remove_nested_value_then_key_does_not_exist()
+    {
+        $this->subject->remove('one.two.three');
+
+        $this->assertFalse($this->subject->has('one.two.three'));
+    }
+
+    public function test_when_remove_but_key_does_not_exist_then_nothing_happens()
+    {
+        $this->subject->remove('missing.property');
+
+        $this->assertFalse($this->subject->has('missing.property'));
+    }
+
 }

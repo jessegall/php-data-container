@@ -34,6 +34,8 @@ The `set()` method sets a value in the container using dot notation to traverse 
 
 The `setAsReference()` method works similarly to the `set()` method, but instead of setting the value directly, it sets a reference to the value. This allows the caller to modify the value directly in the container.
 
+The `remove()` method removes a value from the container using dot notation. The method returns the value that was removed.
+
 The `has()` method checks if a key exists in the container using dot notation to traverse the array. If any intermediate keys in the provided key do not exist, the method returns `false`. If the key exists, the method returns `true`.
 
 The `map()` method applies a callback function to a value within the container and returns the result. If the provided key points to an array, the callback is applied to each item in the array and an array of results is returned. If the `$replace` argument is `true`, the original value in the container is replaced with the result of the callback.
@@ -48,7 +50,7 @@ The `clear()` removes all items from the container array, except the items speci
 use JesseGall\ContainsData\ContainsData;
 
 $data = new class {
-    use ContainsData;
+    use ContainsData; // Register the trait
 };
 
 // Set a value in the container using dot notation
@@ -56,6 +58,9 @@ $data->set('foo.bar', 'baz');
 
 // Get a value from the container using dot notation
 $value = $data->get('foo.bar'); // "baz"
+
+// Remove a value from the container using dot notation
+$data->remove('foo.bar');
 
 // Check if a key exists in the container
 if ($data->has('foo.bar')) {
