@@ -422,4 +422,9 @@ class ContainsDataTest extends TestCase
         $this->assertFalse($this->subject->has('missing.property'));
     }
 
+    public function test_when_count_then_correct_count()
+    {
+        $this->assertEquals(3, $this->subject->count());
+    }
+
 }

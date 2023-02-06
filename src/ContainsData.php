@@ -277,4 +277,14 @@ trait ContainsData
 
         $container = $persist->container();
     }
+
+    /**
+     * Get the count of the container
+     *
+     * @return int
+     */
+    public function count(): int
+    {
+        return count($this->container());
+    }
 }
