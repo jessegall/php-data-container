@@ -1,452 +1,251 @@
 <?php
 
-namespace Test;
+namespace JesseGall\Tests;
 
-use JesseGall\ContainsData\ContainsData;
-use JesseGall\ContainsData\ReferenceMissingException;
+use JesseGall\Data\Reference;
 use PHPUnit\Framework\TestCase;
 
 class ContainsDataTest extends TestCase
 {
 
     /**
-     * @var ContainsData
+     * ----------------------------------------
+     * setData method
+     * ----------------------------------------
      */
-    private $subject;
 
-    protected function setUp(): void
+    public function testSetData()
     {
-        parent::setUp();
+        $container = container(['foo' => 'bar']);
 
-        $this->subject = new class {
-            use ContainsData;
-
-            public function __construct()
-            {
-                $this->__container = [
-                    'one' => [
-                        'two' => [
-                            'three' => 'value'
-                        ]
-                    ],
-                    'list' => [1, 2, 3],
-                    'associative' => [
-                        'one' => 1,
-                        'two' => 2,
-                        'three' => 3
-                    ]
-                ];
-            }
-
-            public function getContainer(): array
-            {
-                return $this->__container;
-            }
-
-            public function setContainer(array $container): void
-            {
-                $this->__container = $container;
-            }
-        };
+        $this->assertEquals(['foo' => 'bar'], $container->get());
     }
 
-    public function test_has_returns_true_when_value_exists()
+    public function testSetDataUsingReference()
     {
-        $this->assertTrue($this->subject->has('one'));
-        $this->assertTrue($this->subject->has('one.two'));
-        $this->assertTrue($this->subject->has('one.two.three'));
+        $container = container();
+
+        $data = ['foo' => 'bar'];
+
+        $container->setData(new Reference($data));
+
+        $this->assertEquals(['foo' => 'bar'], $container->get());
+
+        $data['foo'] = 'baz';
+
+        $this->assertEquals(['foo' => 'baz'], $container->get());
     }
 
-    public function test_has_returns_false_when_first_segments_exist_but_final_segments_do_not_exist()
+    /**
+     * ----------------------------------------
+     * set method
+     * ----------------------------------------
+     */
+
+    public function testSetKeyValuePair()
     {
-        $this->assertFalse($this->subject->has('one.two.three.four.five'));
+        $container = container();
+
+        $container->set('foo.bar', 'baz');
+
+        $this->assertEquals('baz', $container->get('foo.bar'));
     }
 
-    public function test_has_returns_false_when_value_does_not_exists()
+    public function testSetKeyValuePairOnExistingPath()
     {
-        $this->subject->setContainer([]);
+        $container = container();
 
-        $this->assertFalse($this->subject->has('one'));
-        $this->assertFalse($this->subject->has('one.two'));
-        $this->assertFalse($this->subject->has('one.two.three'));
+        $container->set('foo.bar', 'baz');
+
+        $container->set('foo.bar.baz', 'qux');
+
+        $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get());
     }
 
-    public function test_get_value_with_dot_notation_returns_expected_value()
+    public function testSetKeyValueUsingReferenceValue()
     {
-        $this->assertEquals(['two' => ['three' => 'value']], $this->subject->get('one'));
-        $this->assertEquals(['three' => 'value'], $this->subject->get('one.two'));
-        $this->assertEquals('value', $this->subject->get('one.two.three'));
+        $container = container();
+
+        $value = 'foo';
+
+        $container->set('bar', new Reference($value));
+
+        $this->assertEquals('foo', $container->get('bar'));
+
+        $value = 'baz';
+
+        $this->assertEquals('baz', $container->get('bar'));
     }
 
-    public function test_get_returns_null_when_value_does_not_exist()
-    {
-        $this->subject->setContainer([]);
+    /**
+     * ----------------------------------------
+     * get method
+     * ----------------------------------------
+     */
 
-        $this->assertNull($this->subject->get('one'));
-        $this->assertNull($this->subject->get('one.two'));
-        $this->assertNull($this->subject->get('one.two.three'));
+    public function testGetValueFromKey()
+    {
+        $container = container(['foo' => ['bar' => 'baz']]);
+
+        $this->assertEquals('baz', $container->get('foo.bar'));
     }
 
-    public function test_get_returns_default_when_value_does_not_exist_and_default_is_given()
+    public function testGetValueFromMissingKey()
     {
-        $this->subject->setContainer([]);
+        $container = container();
 
-        $this->assertEquals('default', $this->subject->get('one', 'default'));
-        $this->assertEquals('default', $this->subject->get('one.two', 'default'));
-        $this->assertEquals('default', $this->subject->get('one.two.three', 'default'));
+        $this->assertNull($container->get('foo.bar'));
     }
 
-    public function test_given_key_null_when_get_then_entire_container_returned()
+    public function testGetValueFromMissingKeyWithDefault()
     {
-        $this->assertEquals($this->subject->getContainer(), $this->subject->get(null));
+        $container = container();
+
+        $this->assertEquals('baz', $container->get('foo.bar', 'baz'));
     }
 
-    public function test_set_overwrites_existing_value_when_exists()
+    public function testGetValueFromNullKey()
     {
-        $expected = 'new value';
+        $container = container(['foo' => ['bar' => 'baz']]);
 
-        $this->subject->set('one.two.three', $expected);
-        $this->assertEquals($expected, $this->subject->getContainer()['one']['two']['three']);
-
-        $this->subject->set('one.two', $expected);
-        $this->assertEquals($expected, $this->subject->getContainer()['one']['two']);
-
-        $this->subject->set('one', $expected);
-        $this->assertEquals($expected, $this->subject->getContainer()['one']);
+        $this->assertEquals(['foo' => ['bar' => 'baz']], $container->get());
     }
 
-    public function test_set_creates_missing_segments_when_missing()
+    public function testGetValueFromKeyAsReference()
     {
-        $this->subject->setContainer([]);
+        $container = container(['foo' => ['bar' => 'baz']]);
 
-        $this->assertEquals(['one' => 'value'], $this->subject->set('one', 'value'));
-        $this->assertEquals(['one' => ['two' => 'value']], $this->subject->set('one.two', 'value'));
-        $this->assertEquals(['one' => ['two' => ['three' => 'value']]], $this->subject->set('one.two.three', 'value'));
+        $value = &$container->get('foo.bar');
+
+        $value = 'qux';
+
+        $this->assertEquals('qux', $container->get('foo.bar'));
     }
 
-    public function test_map_returns_single_mapped_value_when_key_points_to_a_single_item()
-    {
-        $actual = $this->subject->map('one.two.three', fn($item) => $item);
+    /**
+     * ----------------------------------------
+     * has method
+     * ----------------------------------------
+     */
 
-        $this->assertEquals('value', $actual);
+    public function testHasKey()
+    {
+        $container = container();
+
+        $this->assertFalse($container->has('foo.bar'));
+
+        $container->set('foo.bar', 'baz');
+
+        $this->assertTrue($container->has('foo.bar'));
     }
 
-    public function test_map_returns_array_of_mapped_values_when_key_points_to_a_list()
-    {
-        $actual = $this->subject->map('list', fn($item) => $item * ($item - 1));
+    /**
+     * ----------------------------------------
+     * delete method
+     * ----------------------------------------
+     */
 
-        $this->assertEquals([0, 2, 6], $actual);
+    public function testDeleteKey()
+    {
+        $container = container(['foo' => ['bar' => 'baz']]);
+
+        $container->delete('foo.bar');
+
+        $this->assertFalse($container->has('foo.bar'));
     }
 
-    public function test_map_preserves_keys_when_key_points_to_an_associative_array()
+    public function testDeleteMissingKey()
     {
-        $actual = $this->subject->map('associative', fn($item) => $item * ($item - 1));
+        $container = container(['foo' => ['bar' => 'baz']]);
 
-        $this->assertEquals(['one' => 0, 'two' => 2, 'three' => 6], $actual);
+        $container->delete('foo.bar.baz.qux');
+
+        $container->delete('bar.baz.qux');
+
+        $this->assertTrue($container->has('foo.bar'));
     }
 
-    public function test_map_returns_key_as_second_argument_in_the_callback_when_key_points_to_an_array()
+    /**
+     * ----------------------------------------
+     * flatten method
+     * ----------------------------------------
+     */
+
+    public function testFlatten()
     {
-        $keys = [];
-
-        $this->subject->map('associative', function ($item, $key) use (&$keys) {
-            $keys[] = $key;
-        });
-
-        $this->assertEquals(['one', 'two', 'three'], $keys);
-    }
-
-    public function test_map_does_not_replace_item_when_replace_is_set_to_false()
-    {
-        $this->subject->map('list', fn($item) => $item * ($item - 1));
-
-        $this->assertEquals([1, 2, 3], $this->subject->getContainer()['list']);
-    }
-
-    public function test_map_replaces_item_when_replace_is_set_to_true()
-    {
-        $this->subject->map('list', fn($item) => $item * ($item - 1), true);
-
-        $this->assertEquals([0, 2, 6], $this->subject->getContainer()['list']);
-    }
-
-    public function test_given_key_null_when_map_is_called_then_map_over_all_items()
-    {
-        $expected = [1, 2, 3];
-
-        $actual = [];
-
-        $subject = new class { use ContainsData; };
-
-        $subject->container($expected);
-
-        $subject->map(null, function ($item) use (&$actual) {
-            $actual[] = $item;
-        });
-
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function test_container_can_be_overridden_to_point_to_a_different_array()
-    {
-        $localSubject = new class($this->subject) {
-            use ContainsData;
-
-            private object $target;
-
-            public function __construct(object $target)
-            {
-                $this->target = $target;
-            }
-
-            public function &container(array &$container = null): array
-            {
-                return $this->target->container();
-            }
-        };
-
-        $this->assertEquals($this->subject->container(), $localSubject->container());
-
-        $this->subject->container()['this_should_be_synced'] = 'synced value';
-        $this->assertEquals('synced value', $localSubject->container()['this_should_be_synced']);
-
-        $localSubject->container()['this_should_be_synced'] = 'reversed';
-        $this->assertEquals('reversed', $this->subject->container()['this_should_be_synced']);
-
-        unset($this->subject->container()['this_should_be_synced']);
-        $this->assertNotContains('this_should_be_synced', $localSubject->container());
-    }
-
-    public function test_container_reference_can_be_replaced_by_passing_an_argument()
-    {
-        $localSubject = new class() {
-            use ContainsData;
-        };
-
-        $this->assertEquals([], $localSubject->container());
-
-        $localSubject->container($this->subject->container());
-
-        $this->assertEquals($this->subject->container(), $localSubject->container());
-
-        $this->subject->container()['this_should_be_synced'] = 'synced value';
-        $this->assertEquals('synced value', $localSubject->container()['this_should_be_synced']);
-
-        $localSubject->container()['this_should_be_synced'] = 'reversed';
-        $this->assertEquals('reversed', $this->subject->container()['this_should_be_synced']);
-
-        unset($this->subject->container()['this_should_be_synced']);
-        $this->assertNotContains('this_should_be_synced', $localSubject->container());
-    }
-
-    public function test_container_reference_can_created_with_empty_array()
-    {
-        $container = [];
-
-        $this->subject->container($container);
-
-        $container['value'] = 'expected';
-
-        $this->assertEquals('expected', $this->subject->container()['value']);
-    }
-
-    public function test_merge_merges_data_as_expected()
-    {
-        $this->subject->merge([
-            'one' => [
-                'two' => [
-                    'three' => 'new value',
-                ],
-                '_two' => [
-                    'property' => 'value'
-                ]
-            ],
-            'merged' => 'property',
+        $container = container([
+            'foo' => 'bar',
+            'baz' => ['qux' => 'quux'],
+            'corge' => ['grault' => ['garply' => 'waldo', 'fred' => 'plugh']],
         ]);
 
         $this->assertEquals([
-            'one' => [
-                'two' => [
-                    'three' => 'new value'
-                ],
-                '_two' => [
-                    'property' => 'value'
-                ]
-            ],
-            'merged' => 'property',
-            'list' => [1, 2, 3],
-            'associative' => [
-                'one' => 1,
-                'two' => 2,
-                'three' => 3
-            ]
-        ], $this->subject->getContainer());
+            'foo' => 'bar',
+            'baz.qux' => 'quux',
+            'corge.grault.garply' => 'waldo',
+            'corge.grault.fred' => 'plugh',
+        ], $container->flatten());
     }
 
-    public function test_given_overwrite_false_when_merge_then_existing_data_is_preserved()
+    /**
+     * ----------------------------------------
+     * merge method
+     * ----------------------------------------
+     */
+
+    public function testMergeKey()
     {
-        $this->subject->merge([
-            'one' => [
-                'two' => [
-                    'three' => 'new value',
-                ],
-            ],
-            'merged' => 'merged value',
-        ], false);
+        $container = container(['foo' => ['bar' => 'baz']]);
 
-        $this->assertEquals('value', $this->subject->get('one.two.three'));
+        $container->merge('foo', ['bar' => ['baz' => 'qux']]);
 
-        $this->assertEquals('merged value', $this->subject->get('merged'));
+        $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get());
     }
 
-    public function test_get_as_reference_returns_a_reference()
+    public function testMergeMissingKey()
     {
-        $value = &$this->subject->getAsReference('associative.one');
+        $container = container();
 
-        $value = 3;
+        $container->merge('foo', ['bar' => ['baz' => 'qux']]);
 
-        $this->assertEquals($value, $this->subject->getContainer()['associative']['one']);
+        $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get());
     }
 
-    public function test_get_as_reference_throws_an_exception_when_key_is_missing()
+    public function testMergeNullKey()
     {
-        $this->expectException(ReferenceMissingException::class);
+        $container = container(['foo' => ['bar' => 'baz']]);
 
-        $this->subject->getAsReference('associative.missing');
+        $container->merge(null, ['foo' => ['bar' => ['baz' => 'qux']]]);
+
+        $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get());
     }
 
-    public function test_set_as_reference_sets_value_as_reference()
+    /**
+     * ----------------------------------------
+     * Custom delimiter
+     * ----------------------------------------
+     */
+
+    public function testCustomDelimiter()
     {
-        $value = 'initial value';
+        $container = container();
 
-        $this->subject->setAsReference('one.two.three', $value);
+        $container->setDelimiter('_');
 
-        $this->assertEquals('initial value', $this->subject->getContainer()['one']['two']['three']);
+        $container->setData(['foo' => ['bar' => 'baz']]);
 
-        $value = 'new value';
+        $this->assertEquals('baz', $container->get('foo_bar'));
 
-        $this->assertEquals('new value', $this->subject->getContainer()['one']['two']['three']);
+        $this->assertTrue($container->has('foo_bar'));
+
+        $container->set('foo_bar', 'qux');
+
+        $this->assertEquals('qux', $container->get('foo_bar'));
+
+        $this->assertEquals(['foo_bar' => 'qux'], $container->flatten());
+
+        $container->delete('foo_bar');
+
+        $this->assertFalse($container->has('foo_bar'));
     }
-
-    public function test_filter_return_correct_values_when_filtering_array()
-    {
-        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
-
-        $container = new class { use ContainsData; };
-        $container->container($data);
-
-        $result = $container->filter('foo', function ($item) {
-            return $item !== 'b';
-        });
-
-        $this->assertEquals(['a', 'c'], $result);
-    }
-
-    public function test_filter_return_correct_empty_array_when_all_items_in_array_are_filtered()
-    {
-        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
-
-        $container = new class { use ContainsData; };
-        $container->container($data);
-
-        $result = $container->filter('foo', function ($item) {
-            return is_numeric($item);
-        });
-
-        $this->assertEquals([], $result);
-    }
-
-    public function test_filter_returns_correct_value_when_filtering_single_item()
-    {
-        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
-
-        $container = new class { use ContainsData; };
-        $container->container($data);
-
-        $result = $container->filter('bar', function ($item) {
-            return $item > 1;
-        });
-
-        $this->assertEquals(2, $result);
-    }
-
-    public function test_filter_returns_null_when_filtering_single_item_is_filtered()
-    {
-        $data = ['foo' => ['a', 'b', 'c'], 'bar' => 2];
-
-        $container = new class { use ContainsData; };
-        $container->container($data);
-
-        $result = $container->filter('bar', function ($item) {
-            return $item > 2;
-        });
-
-        $this->assertNull($result);
-    }
-
-    public function test_when_clear_container_it_is_empty()
-    {
-        $this->subject->clear();
-
-        $this->assertEmpty($this->subject->container());
-    }
-
-    public function test_when_clear_then_reference_is_empty()
-    {
-        $reference = &$this->subject->container();
-
-        $this->subject->clear();
-
-        $this->assertEmpty($reference);
-    }
-
-    public function test_given_except_when_clear_then_excepted_keys_are_not_cleared()
-    {
-        $this->subject->clear([
-            'associative.one',
-        ]);
-
-        $this->assertTrue($this->subject->has('associative.one'));
-    }
-
-    public function test_given_except_when_clear_then_reference_still_exists()
-    {
-        $reference = &$this->subject->getAsReference('associative.one');
-
-        $this->subject->clear([
-            'associative.one',
-            'missing.property'
-        ]);
-
-        $reference = 'new value';
-
-        $this->assertEquals('new value', $this->subject->get('associative.one'));
-    }
-
-    public function test_when_remove_then_key_does_not_exist()
-    {
-        $this->subject->remove('list');
-
-        $this->assertFalse($this->subject->has('list'));
-    }
-
-    public function test_when_remove_nested_value_then_key_does_not_exist()
-    {
-        $this->subject->remove('one.two.three');
-
-        $this->assertFalse($this->subject->has('one.two.three'));
-    }
-
-    public function test_when_remove_but_key_does_not_exist_then_nothing_happens()
-    {
-        $this->subject->remove('missing.property');
-
-        $this->assertFalse($this->subject->has('missing.property'));
-    }
-
-    public function test_when_count_then_correct_count()
-    {
-        $this->assertEquals(3, $this->subject->count());
-    }
-
 }

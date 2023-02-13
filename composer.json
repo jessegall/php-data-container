@@ -1,15 +1,18 @@
 {
-    "name": "jessegall/contains-data",
+    "name": "jessegall/php-data-container",
     "description": "A trait that provides a convenient solution for objects to use an array as their data source. \nAs well as offering the possibility to share the same data between instances.",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "JesseGall\\ContainsData\\": "src/"
-        }
+            "JesseGall\\Data\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Test\\": "tests/"
+            "JesseGall\\Tests\\": "tests/"
         },
         "files": [
             "tests/helpers.test.php"

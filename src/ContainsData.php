@@ -1,118 +1,68 @@
 <?php
 
-namespace JesseGall\ContainsData;
+namespace JesseGall\Data;
 
-use Closure;
-
+/**
+ * This trait is used to add data container functionality to a class.
+ * It provides dot notation for setting and getting data.
+ *
+ * @template TKey of array-key
+ * @template TValue mixed
+ */
 trait ContainsData
 {
 
     /**
-     * The container which holds the data.
+     * The data container.
      *
-     * @var array
+     * @var array<TKey, TValue>
      */
-    protected array $__container = [];
+    protected array $data = [];
 
     /**
-     * Returns a reference to the data container.
+     * The delimiter used for accessing nested data.
      *
-     * To point to a different data container the method can be overridden.
-     * It is also possible to pass a new reference as argument.
-     *
-     * @param array|null $container
-     * @return array
+     * @var string
      */
-    public function &container(array &$container = null): array
+    protected string $delimiter = '.';
+
+    /**
+     * Set the data container.
+     * If the given data is wrapped in a reference object,
+     * the data container will be a reference to the value of the reference object.
+     *
+     * @param array|Reference $data
+     * @return $this
+     */
+    public function setData(array|Reference $data): static
     {
-        if (! is_null($container)) {
-            $this->__container = &$container;
+        if ($data instanceof Reference) {
+            $this->data = &$data->get();
+        } else {
+            $this->data = $data;
         }
 
-        return $this->__container;
+        return $this;
     }
 
     /**
-     * Get an item using dot notation
-     * If no key is provided the entire container will be returned.
-     *
-     * @param string|null $key
-     * @param mixed|null $default
-     * @return mixed
-     */
-    public function get(string $key = null, mixed $default = null): mixed
-    {
-        if (is_null($key)) {
-            return $this->container();
-        }
-
-        try {
-            return $this->getAsReference($key);
-        } catch (ReferenceMissingException) {
-            return $default;
-        }
-    }
-
-    /**
-     * Get an item as reference using dot notation.
-     *
-     * @param string $key
-     * @return mixed
-     * @throws ReferenceMissingException
-     */
-    public function &getAsReference(string $key): mixed
-    {
-        if (! $this->has($key)) {
-            throw new ReferenceMissingException($key);
-        }
-
-        $data = &$this->container();
-
-        if (str_contains($key, '.')) {
-            [$segment] = explode('.', $key);
-
-            $container = new class { use ContainsData; };
-
-            $container->container($data[$segment]);
-
-            return $container->getAsReference(str_replace("$segment.", '', $key));
-        }
-
-        return $data[$key];
-    }
-
-    /**
-     * Set item using dot notation.
+     * Set a key value pair
+     * If the given value is wrapped in a reference object,
+     * the value will be a reference to the value of the reference object.
      *
      * @param string $key
      * @param mixed|null $value
-     * @return array
+     * @return $this
      */
-    public function set(string $key, mixed $value = null): array
+    public function set(string $key, mixed $value = null): static
     {
-        return $this->setAsReference($key, $value);
-    }
+        $data = &$this->data;
 
-    /**
-     * Set item as reference using dot notation.
-     *
-     * @param string $key
-     * @param mixed|null $value
-     * @return array
-     */
-    public function setAsReference(string $key, mixed &$value): array
-    {
-        $data = &$this->container();
+        $segments = explode($this->delimiter, $key);
 
-        $segments = explode('.', $key);
+        $key = array_pop($segments);
 
-        foreach ($segments as $index => $segment) {
-            if (count($segments) === 1) {
-                break;
-            }
-
-            unset($segments[$index]);
-
+        foreach ($segments as $segment) {
             if (! isset($data[$segment]) || ! is_array($data[$segment])) {
                 $data[$segment] = [];
             }
@@ -120,52 +70,86 @@ trait ContainsData
             $data = &$data[$segment];
         }
 
-        $data[array_shift($segments)] = &$value;
-
-        return $this->container();
-    }
-
-    /**
-     * Remove an item using dot notation.
-     *
-     * @param string $key
-     * @return void
-     */
-    public function remove(string $key): void
-    {
-        $segments = explode('.', $key);
-
-        if (count($segments) > 1) {
-            try {
-                $container = &$this->getAsReference(implode('.', array_slice($segments, 0, -1)));
-            } catch (ReferenceMissingException) {
-                return;
-            }
+        if ($value instanceof Reference) {
+            $data[$key] = &$value->get();
         } else {
-            $container = &$this->container();
+            $data[$key] = $value;
         }
 
-        unset($container[array_pop($segments)]);
+        return $this;
     }
 
     /**
-     * Check if an item exists using dot notation.
+     * Get the value of the given key
+     * If the given key is null, the entire data container will be returned.
+     * If the given key is not found, the given default value will be returned.
+     *
+     * @param string|null $key
+     * @param mixed|null $default
+     * @return mixed
+     */
+    public function &get(string $key = null, mixed $default = null): mixed
+    {
+        if (is_null($key)) {
+            return $this->data;
+        }
+
+        $data = &$this->data;
+
+        foreach (explode($this->delimiter, $key) as $segment) {
+            if (! is_array($data) || ! isset($data[$segment])) {
+                return $default;
+            }
+
+            $data = &$data[$segment];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Delete the given key
+     *
+     * @param string $key
+     * @return $this
+     */
+    public function delete(string $key): static
+    {
+        $data = &$this->data;
+
+        $segments = explode($this->delimiter, $key);
+
+        $key = array_pop($segments);
+
+        foreach ($segments as $segment) {
+            if (! isset($data[$segment])) {
+                return $this;
+            }
+
+            $data = &$data[$segment];
+
+            if (! is_array($data)) {
+                return $this;
+            }
+        }
+
+        unset($data[$key]);
+
+        return $this;
+    }
+
+    /**
+     * Check if the given key exists
      *
      * @param string $key
      * @return bool
      */
     public function has(string $key): bool
     {
-        $data = $this->container();
+        $data = $this->data;
 
-        $segments = explode('.', $key);
-
-        foreach ($segments as $segment) {
-            if (! is_array($data)) {
-                return false;
-            }
-
-            if (! array_key_exists($segment, $data)) {
+        foreach (explode($this->delimiter, $key) as $segment) {
+            if (! is_array($data) || ! isset($data[$segment])) {
                 return false;
             }
 
@@ -176,120 +160,63 @@ trait ContainsData
     }
 
     /**
-     * Map the item to the result of the callback.
-     * If the key points to an array, map each item of the array.
+     * Get all data as a flat array
      *
-     * When $replace is true, replace the item with the result
-     *
-     * @param string|null $key
-     * @param Closure $callback
-     * @param bool $replace
-     * @return mixed
-     */
-    public function map(string|null $key, Closure $callback, bool $replace = false): mixed
-    {
-        $item = $this->get($key);
-
-        if (! is_array($item)) {
-            $item = $callback($item);
-        } else {
-            foreach ($item as $_key => $_item) {
-                $item[$_key] = $callback($_item, $_key);
-            }
-        }
-
-        if ($replace) {
-            $this->set($key, $item);
-        }
-
-        return $item;
-    }
-
-
-    /**
-     * Filter the item using the provided callback.
-     * If the key points to an array, filter each item of the array.
-     *
-     * @param string $key
-     * @param Closure $callback
-     * @return mixed
-     */
-    public function filter(string $key, Closure $callback): mixed
-    {
-        $data = $this->get($key);
-
-        if (is_array($data)) {
-            $result = array_filter($data, $callback);
-
-            if (array_is_list($data)) {
-                $result = array_values($result);
-            }
-
-            return $result;
-        }
-
-        return $callback($data) ? $data : null;
-    }
-
-    /**
-     * Merge an array with the container
-     *
-     * @param array $data
-     * @param bool $overwrite
-     * @param string $prefix
+     * @param string|null $prefix
      * @return array
      */
-    public function merge(array $data, bool $overwrite = true, string $prefix = ''): array
+    public function flatten(string $prefix = null): array
     {
-        foreach ($data as $_key => $value) {
-            $key = $prefix . $_key;
+        $result = [];
+
+        $data = $this->get($prefix);
+
+        foreach ($data as $itemKey => $value) {
+            $nextKey = is_null($prefix) ? $itemKey : $prefix . $this->delimiter . $itemKey;
 
             if (is_array($value)) {
-                $this->merge($value, $overwrite, "$key.");
+                $result[] = $this->flatten($nextKey);
             } else {
-                if (! $overwrite && $this->has($key)) {
-                    continue;
-                }
-
-                $this->set($key, $value);
+                $result[] = [$nextKey => $value];
             }
         }
 
-        return $this->container();
+        return array_merge(...$result);
     }
 
     /**
-     * Clear the container
+     * Merge the given data into the data container
      *
-     * @param array $except
-     * @return void
+     * @param string|null $key
+     * @param array $data
+     * @return $this
      */
-    public function clear(array $except = []): void
+    public function merge(string|null $key, array $data): static
     {
-        $container = &$this->container();
+        foreach ($data as $itemKey => $value) {
+            $itemKey = is_null($key) ? $itemKey : $key . $this->delimiter . $itemKey;
 
-        $persist = new class { use ContainsData; };
-
-        foreach ($except as $key) {
-            try {
-                $value = &$this->getAsReference($key);
-
-                $persist->setAsReference($key, $value);
-            } catch (ReferenceMissingException) {
-                continue;
+            if (is_array($value)) {
+                $this->merge($itemKey, $value);
+            } else {
+                $this->set($itemKey, $value);
             }
         }
 
-        $container = $persist->container();
+        return $this;
     }
 
     /**
-     * Get the count of the container
+     * Set the delimiter used for accessing nested data
      *
-     * @return int
+     * @param string $delimiter
+     * @return $this
      */
-    public function count(): int
+    public function setDelimiter(string $delimiter): static
     {
-        return count($this->container());
+        $this->delimiter = $delimiter;
+
+        return $this;
     }
+
 }
