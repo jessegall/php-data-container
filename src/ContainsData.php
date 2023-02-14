@@ -211,6 +211,28 @@ trait ContainsData
         return $this;
     }
 
+    public function mergeDistinct(string|null|array $key, array $data = null): static
+    {
+        if (is_array($key)) {
+            $data = $key;
+            $key = null;
+        }
+
+        foreach ($data as $itemKey => $value) {
+            $itemKey = is_null($key) ? $itemKey : $key . $this->delimiter . $itemKey;
+
+            if (is_array($value)) {
+                $this->mergeDistinct($itemKey, $value);
+            } else {
+                if (! $this->has($itemKey)) {
+                    $this->set($itemKey, $value);
+                }
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * Clear the data container
      *

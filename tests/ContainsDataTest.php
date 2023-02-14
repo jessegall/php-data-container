@@ -231,6 +231,31 @@ class ContainsDataTest extends TestCase
 
     /**
      * ----------------------------------------
+     * mergeDistinct method
+     * ----------------------------------------
+     */
+
+    public function testMergeDistinct()
+    {
+        $container = container([
+            'foo' => ['bar' => 'baz'],
+            'baz' => ['qux' => 'quux'],
+        ]);
+
+        $container->mergeDistinct([
+            'foo' => ['bar' => 'qux'],
+            'corge' => ['grault' => 'garply'],
+        ]);
+
+        $this->assertEquals([
+            'foo' => ['bar' => 'baz'],
+            'baz' => ['qux' => 'quux'],
+            'corge' => ['grault' => 'garply'],
+        ], $container->get());
+    }
+
+    /**
+     * ----------------------------------------
      * clear method
      * ----------------------------------------
      */

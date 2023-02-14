@@ -61,6 +61,15 @@ interface Container
     public function merge(string $key, array $data = null): static;
 
     /**
+     * Merge the given data with the existing data, but only if the key does not exist
+     *
+     * @param string $key
+     * @param array|null $data
+     * @return $this
+     */
+    public function mergeDistinct(string $key, array $data = null): static;
+
+    /**
      * Clear the data container
      *
      * @return $this
