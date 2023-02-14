@@ -141,26 +141,26 @@ class ContainsDataTest extends TestCase
 
     /**
      * ----------------------------------------
-     * delete method
+     * forget method
      * ----------------------------------------
      */
 
-    public function testDeleteKey()
+    public function testForgetKey()
     {
         $container = container(['foo' => ['bar' => 'baz']]);
 
-        $container->delete('foo.bar');
+        $container->forget('foo.bar');
 
         $this->assertFalse($container->has('foo.bar'));
     }
 
-    public function testDeleteMissingKey()
+    public function testForgetMissingKey()
     {
         $container = container(['foo' => ['bar' => 'baz']]);
 
-        $container->delete('foo.bar.baz.qux');
+        $container->forget('foo.bar.baz.qux');
 
-        $container->delete('bar.baz.qux');
+        $container->forget('bar.baz.qux');
 
         $this->assertTrue($container->has('foo.bar'));
     }
@@ -279,7 +279,7 @@ class ContainsDataTest extends TestCase
 
         $this->assertEquals(['foo_bar' => 'qux'], $container->flatten());
 
-        $container->delete('foo_bar');
+        $container->forget('foo_bar');
 
         $this->assertFalse($container->has('foo_bar'));
     }

@@ -36,12 +36,12 @@ interface Container
     public function has(string $key): bool;
 
     /**
-     * Delete the given key
+     * Remove the given key
      *
      * @param string $key
      * @return $this
      */
-    public function delete(string $key): static;
+    public function forget(string $key): static;
 
     /**
      * Flatten the data
