@@ -207,6 +207,18 @@ trait ContainsData
     }
 
     /**
+     * Clear the data container
+     *
+     * @return ContainsData
+     */
+    public function clear(): static
+    {
+        $this->data = [];
+
+        return $this;
+    }
+
+    /**
      * Set the delimiter used for accessing nested data
      *
      * @param string $delimiter

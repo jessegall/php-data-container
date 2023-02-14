@@ -222,6 +222,32 @@ class ContainsDataTest extends TestCase
 
     /**
      * ----------------------------------------
+     * clear method
+     * ----------------------------------------
+     */
+
+    public function testClear()
+    {
+        $container = container(['foo' => ['bar' => 'baz']]);
+
+        $container->clear();
+
+        $this->assertEquals([], $container->get());
+    }
+
+    public function testClearAlsoClearsReference()
+    {
+        $data = ['foo' => ['bar' => 'baz']];
+
+        $container = container(new Reference($data));
+
+        $container->clear();
+
+        $this->assertEquals([], $data);
+    }
+
+    /**
+     * ----------------------------------------
      * Custom delimiter
      * ----------------------------------------
      */

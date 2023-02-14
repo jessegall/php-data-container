@@ -60,5 +60,12 @@ interface Container
      */
     public function merge(string $key, array $data): static;
 
+    /**
+     * Clear the data container
+     *
+     * @return $this
+     */
+    public function clear(): static;
+
 
 }
