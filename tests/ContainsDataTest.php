@@ -220,6 +220,15 @@ class ContainsDataTest extends TestCase
         $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get());
     }
 
+    public function testMergeArrayKey()
+    {
+        $container = container(['foo' => ['bar' => 'baz']]);
+
+        $container->merge(['foo' => ['bar' => ['baz' => 'qux']]]);
+
+        $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get());
+    }
+
     /**
      * ----------------------------------------
      * clear method

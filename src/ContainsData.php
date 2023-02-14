@@ -187,12 +187,17 @@ trait ContainsData
     /**
      * Merge the given data into the data container
      *
-     * @param string|null $key
-     * @param array $data
+     * @param string|array|null $key
+     * @param array|null $data
      * @return $this
      */
-    public function merge(string|null $key, array $data): static
+    public function merge(string|null|array $key, array $data = null): static
     {
+        if (is_array($key)) {
+            $data = $key;
+            $key = null;
+        }
+
         foreach ($data as $itemKey => $value) {
             $itemKey = is_null($key) ? $itemKey : $key . $this->delimiter . $itemKey;
 

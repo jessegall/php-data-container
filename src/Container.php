@@ -55,10 +55,10 @@ interface Container
      * Merge the given data with the existing data
      *
      * @param string $key
-     * @param array $data
+     * @param array|null $data
      * @return $this
      */
-    public function merge(string $key, array $data): static;
+    public function merge(string $key, array $data = null): static;
 
     /**
      * Clear the data container
