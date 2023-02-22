@@ -211,6 +211,11 @@ trait ContainsData
         return $this;
     }
 
+    /**
+     * @param string|array|null $key
+     * @param array|null $data
+     * @return $this
+     */
     public function mergeDistinct(string|null|array $key, array $data = null): static
     {
         if (is_array($key)) {
@@ -231,6 +236,32 @@ trait ContainsData
         }
 
         return $this;
+    }
+
+
+    /**
+     * Map the data to the result of the given callback
+     *
+     * @param string|Closure $key
+     * @param callable $callback
+     * @return $this
+     */
+    public function map($key, $callback = null): mixed
+    {
+        if (is_callable($key)) {
+            $callback = $key;
+            $key = null;
+        }
+
+        $data = $this->get($key);
+
+        if (is_array($data)) {
+            $data = array_map($callback, $data);
+        } else {
+            $data = $callback($data);
+        }
+
+        return $data;
     }
 
     /**

@@ -308,4 +308,43 @@ class ContainsDataTest extends TestCase
 
         $this->assertFalse($container->has('foo_bar'));
     }
+
+    /**
+     * ----------------------------------------
+     * Map
+     * ----------------------------------------
+     */
+
+    public function testMapKey()
+    {
+        $container = container(['foo' => ['bar' => 'baz']]);
+
+        $actual = $container->map('foo', function ($value) {
+            return $value . 'bar';
+        });
+
+        $this->assertEquals(['bar' => 'bazbar'], $actual);
+    }
+
+    public function testMapMissingKey()
+    {
+        $container = container(['foo' => ['bar' => 'baz']]);
+
+        $actual = $container->map('baz', function ($value) {
+            return 'bar';
+        });
+
+        $this->assertEquals('bar', $actual);
+    }
+
+    public function testMap()
+    {
+        $container = container(['foo' => ['bar' => 'baz']]);
+
+        $actual = $container->map(function ($value) {
+            return ['bar' => $value['bar'] . 'bar'];
+        });
+
+        $this->assertEquals(['foo' => ['bar' => 'bazbar']], $actual);
+    }
 }

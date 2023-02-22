@@ -3,6 +3,8 @@
 namespace JesseGall\Data;
 
 
+use Closure;
+
 /**
  * This interface is used to define a data container.
  */
@@ -68,6 +70,15 @@ interface Container
      * @return $this
      */
     public function mergeDistinct(string $key, array $data = null): static;
+
+    /**
+     * Map the data to the result of the given callback
+     *
+     * @param string|Closure $key
+     * @param callable $callback
+     * @return mixed
+     */
+    public function map($key, $callback = null): mixed;
 
     /**
      * Clear the data container
