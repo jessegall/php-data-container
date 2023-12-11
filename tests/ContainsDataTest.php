@@ -2,6 +2,7 @@
 
 namespace JesseGall\Tests;
 
+use ArrayObject;
 use JesseGall\Data\Reference;
 use PHPUnit\Framework\TestCase;
 
@@ -34,6 +35,21 @@ class ContainsDataTest extends TestCase
         $data['foo'] = 'baz';
 
         $this->assertEquals(['foo' => 'baz'], $container->get());
+    }
+
+    public function testSetDataUsingArrayAccess()
+    {
+        $container = container();
+
+        $data = new ArrayObject(['foo' => 'bar']);
+
+        $container->setData($data);
+
+        $this->assertEquals(['foo' => 'bar'], $container->get()->getArrayCopy());
+
+        $data['foo'] = 'baz';
+
+        $this->assertEquals(['foo' => 'baz'], $container->get()->getArrayCopy());
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace JesseGall\Data;
 
+use ArrayAccess;
+
 /**
  * This trait is used to add data container functionality to a class.
  * It provides dot notation for setting and getting data.
@@ -15,9 +17,9 @@ trait ContainsData
     /**
      * The data container.
      *
-     * @var array<TKey, TValue>
+     * @var array<TKey, TValue>|ArrayAccess
      */
-    protected array $data = [];
+    protected array|ArrayAccess $data = [];
 
     /**
      * The delimiter used for accessing nested data.
@@ -31,10 +33,10 @@ trait ContainsData
      * If the given data is wrapped in a reference object,
      * the data container will be a reference to the value of the reference object.
      *
-     * @param array|Reference $data
+     * @param array|Reference|ArrayAccess $data
      * @return $this
      */
-    public function setData(array|Reference $data): static
+    public function setData(array|Reference|ArrayAccess $data): static
     {
         if ($data instanceof Reference) {
             $this->data = &$data->get();
