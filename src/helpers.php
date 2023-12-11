@@ -11,7 +11,7 @@ if (! function_exists('container')) {
      * @param array|Reference $data
      * @return Container
      */
-    function container(array|Reference $data = []): Container
+    function container(array|Reference|ArrayAccess $data = []): Container
     {
         $container = new class implements Container {
             use ContainsData;

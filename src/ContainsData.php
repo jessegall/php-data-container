@@ -65,7 +65,7 @@ trait ContainsData
         $key = array_pop($segments);
 
         foreach ($segments as $segment) {
-            if (! isset($data[$segment]) || ! is_array($data[$segment])) {
+            if (!isset($data[$segment]) || !$this->isArrayAccessible($data[$segment])) {
                 $data[$segment] = [];
             }
 
@@ -99,7 +99,7 @@ trait ContainsData
         $data = &$this->data;
 
         foreach (explode($this->delimiter, $key) as $segment) {
-            if (! is_array($data) || ! isset($data[$segment])) {
+            if (!$this->isArrayAccessible($data) || !isset($data[$segment])) {
                 return $default;
             }
 
@@ -124,13 +124,13 @@ trait ContainsData
         $key = array_pop($segments);
 
         foreach ($segments as $segment) {
-            if (! isset($data[$segment])) {
+            if (!isset($data[$segment])) {
                 return $this;
             }
 
             $data = &$data[$segment];
 
-            if (! is_array($data)) {
+            if (!$this->isArrayAccessible($data)) {
                 return $this;
             }
         }
@@ -151,7 +151,7 @@ trait ContainsData
         $data = $this->data;
 
         foreach (explode($this->delimiter, $key) as $segment) {
-            if (! is_array($data) || ! isset($data[$segment])) {
+            if (!$this->isArrayAccessible($data) || !isset($data[$segment])) {
                 return false;
             }
 
@@ -176,7 +176,7 @@ trait ContainsData
         foreach ($data as $itemKey => $value) {
             $nextKey = is_null($prefix) ? $itemKey : $prefix . $this->delimiter . $itemKey;
 
-            if (is_array($value)) {
+            if ($this->isArrayAccessible($value)) {
                 $result[] = $this->flatten($nextKey);
             } else {
                 $result[] = [$nextKey => $value];
@@ -195,7 +195,7 @@ trait ContainsData
      */
     public function merge(string|null|array $key, array $data = null): static
     {
-        if (is_array($key)) {
+        if ($this->isArrayAccessible($key)) {
             $data = $key;
             $key = null;
         }
@@ -203,7 +203,7 @@ trait ContainsData
         foreach ($data as $itemKey => $value) {
             $itemKey = is_null($key) ? $itemKey : $key . $this->delimiter . $itemKey;
 
-            if (is_array($value)) {
+            if ($this->isArrayAccessible($value)) {
                 $this->merge($itemKey, $value);
             } else {
                 $this->set($itemKey, $value);
@@ -220,7 +220,7 @@ trait ContainsData
      */
     public function mergeDistinct(string|null|array $key, array $data = null): static
     {
-        if (is_array($key)) {
+        if ($this->isArrayAccessible($key)) {
             $data = $key;
             $key = null;
         }
@@ -228,10 +228,10 @@ trait ContainsData
         foreach ($data as $itemKey => $value) {
             $itemKey = is_null($key) ? $itemKey : $key . $this->delimiter . $itemKey;
 
-            if (is_array($value)) {
+            if ($this->isArrayAccessible($value)) {
                 $this->mergeDistinct($itemKey, $value);
             } else {
-                if (! $this->has($itemKey)) {
+                if (!$this->has($itemKey)) {
                     $this->set($itemKey, $value);
                 }
             }
@@ -257,7 +257,7 @@ trait ContainsData
 
         $data = $this->get($key);
 
-        if (is_array($data)) {
+        if ($this->isArrayAccessible($data)) {
             $data = array_map($callback, $data);
         } else {
             $data = $callback($data);
@@ -273,7 +273,13 @@ trait ContainsData
      */
     public function clear(): static
     {
-        $this->data = [];
+        if ($this->data instanceof ArrayAccess) {
+            foreach ($this->data as $key => $value) {
+                unset($this->data[$key]);
+            }
+        } else {
+            $this->data = [];
+        }
 
         return $this;
     }
@@ -289,6 +295,18 @@ trait ContainsData
         $this->delimiter = $delimiter;
 
         return $this;
+    }
+
+
+    /**
+     * Check if the given data is an array or an instance of ArrayAccess.
+     *
+     * @param mixed $data
+     * @return bool
+     */
+    private function isArrayAccessible(mixed $data): bool
+    {
+        return is_array($data) || $data instanceof ArrayAccess;
     }
 
 }

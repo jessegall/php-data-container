@@ -138,6 +138,13 @@ class ContainsDataTest extends TestCase
         $this->assertEquals('qux', $container->get('foo.bar'));
     }
 
+    public function testGetValueFromKeyWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject(['foo' => ['bar' => 'baz']]));
+
+        $this->assertEquals('baz', $container->get('foo.bar'));
+    }
+
     /**
      * ----------------------------------------
      * has method
@@ -151,6 +158,13 @@ class ContainsDataTest extends TestCase
         $this->assertFalse($container->has('foo.bar'));
 
         $container->set('foo.bar', 'baz');
+
+        $this->assertTrue($container->has('foo.bar'));
+    }
+
+    public function testHasKeyWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject(['foo' => ['bar' => 'baz']]));
 
         $this->assertTrue($container->has('foo.bar'));
     }
@@ -181,6 +195,15 @@ class ContainsDataTest extends TestCase
         $this->assertTrue($container->has('foo.bar'));
     }
 
+    public function testForgetKeyWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject(['foo' => ['bar' => 'baz']]));
+
+        $container->forget('foo.bar');
+
+        $this->assertFalse($container->has('foo.bar'));
+    }
+
     /**
      * ----------------------------------------
      * flatten method
@@ -194,6 +217,22 @@ class ContainsDataTest extends TestCase
             'baz' => ['qux' => 'quux'],
             'corge' => ['grault' => ['garply' => 'waldo', 'fred' => 'plugh']],
         ]);
+
+        $this->assertEquals([
+            'foo' => 'bar',
+            'baz.qux' => 'quux',
+            'corge.grault.garply' => 'waldo',
+            'corge.grault.fred' => 'plugh',
+        ], $container->flatten());
+    }
+
+    public function testFlattenWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject([
+            'foo' => 'bar',
+            'baz' => ['qux' => 'quux'],
+            'corge' => ['grault' => ['garply' => 'waldo', 'fred' => 'plugh']],
+        ]));
 
         $this->assertEquals([
             'foo' => 'bar',
@@ -245,6 +284,15 @@ class ContainsDataTest extends TestCase
         $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get());
     }
 
+    public function testMergeWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject(['foo' => ['bar' => 'baz']]));
+
+        $container->merge('foo', ['bar' => ['baz' => 'qux']]);
+
+        $this->assertEquals(['foo' => ['bar' => ['baz' => 'qux']]], $container->get()->getArrayCopy());
+    }
+
     /**
      * ----------------------------------------
      * mergeDistinct method
@@ -268,6 +316,25 @@ class ContainsDataTest extends TestCase
             'baz' => ['qux' => 'quux'],
             'corge' => ['grault' => 'garply'],
         ], $container->get());
+    }
+
+    public function testMergeDistinctWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject([
+            'foo' => ['bar' => 'baz'],
+            'baz' => ['qux' => 'quux'],
+        ]));
+
+        $container->mergeDistinct([
+            'foo' => ['bar' => 'qux'],
+            'corge' => ['grault' => 'garply'],
+        ]);
+
+        $this->assertEquals([
+            'foo' => ['bar' => 'baz'],
+            'baz' => ['qux' => 'quux'],
+            'corge' => ['grault' => 'garply'],
+        ], $container->get()->getArrayCopy());
     }
 
     /**
@@ -296,6 +363,15 @@ class ContainsDataTest extends TestCase
         $this->assertEquals([], $data);
     }
 
+    public function testClearWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject(['foo' => ['bar' => 'baz']]));
+
+        $container->clear();
+
+        $this->assertEquals([], $container->get()->getArrayCopy());
+    }
+
     /**
      * ----------------------------------------
      * Custom delimiter
@@ -309,6 +385,29 @@ class ContainsDataTest extends TestCase
         $container->setDelimiter('_');
 
         $container->setData(['foo' => ['bar' => 'baz']]);
+
+        $this->assertEquals('baz', $container->get('foo_bar'));
+
+        $this->assertTrue($container->has('foo_bar'));
+
+        $container->set('foo_bar', 'qux');
+
+        $this->assertEquals('qux', $container->get('foo_bar'));
+
+        $this->assertEquals(['foo_bar' => 'qux'], $container->flatten());
+
+        $container->forget('foo_bar');
+
+        $this->assertFalse($container->has('foo_bar'));
+    }
+
+    public function testCustomDelimiterWhenDataIsArrayAccess()
+    {
+        $container = container();
+
+        $container->setDelimiter('_');
+
+        $container->setData(new ArrayObject(['foo' => ['bar' => 'baz']]));
 
         $this->assertEquals('baz', $container->get('foo_bar'));
 
@@ -362,5 +461,16 @@ class ContainsDataTest extends TestCase
         });
 
         $this->assertEquals(['foo' => ['bar' => 'bazbar']], $actual);
+    }
+
+    public function testMapWhenDataIsArrayAccess()
+    {
+        $container = container(new ArrayObject(['foo' => ['bar' => 'baz']]));
+
+        $actual = $container->map('foo', function ($value) {
+            return $value . 'bar';
+        });
+
+        $this->assertEquals(['bar' => 'bazbar'], $actual);
     }
 }
